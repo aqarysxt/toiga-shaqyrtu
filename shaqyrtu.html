@@ -1,0 +1,713 @@
+<!doctype html>
+<html lang="kk">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Шақыру</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Marck+Script&family=Noto+Serif:wght@400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --navy:#12223a;
+      --navy2:#0f1d33;
+      --gold:#c6a45b;
+      --gold2:#b89245;
+      --muted:#2b3b55;
+      --card:rgba(255,255,255,.92);
+      --border:rgba(18,34,58,.14);
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:"Noto Serif", serif;color:var(--navy);}
+
+    .bg{
+      min-height:100vh;
+      background-image:url("bg.jpg");
+      background-size:cover;
+      background-position:center;
+      position:relative;
+      overflow:hidden;
+    }
+    .bg::after{
+      content:"";
+      position:absolute; inset:0;
+      background:linear-gradient(to bottom, rgba(255,255,255,.52), rgba(255,255,255,.72));
+      pointer-events:none;
+      z-index:0;
+    }
+    .bg::before{
+      content:"";
+      position:absolute; inset:-30%;
+      background:
+        radial-gradient(600px 420px at 15% 20%, rgba(198,164,91,.18), transparent 55%),
+        radial-gradient(520px 420px at 85% 35%, rgba(18,34,58,.14), transparent 60%),
+        radial-gradient(540px 520px at 35% 85%, rgba(198,164,91,.14), transparent 60%),
+        radial-gradient(560px 460px at 75% 90%, rgba(18,34,58,.12), transparent 60%);
+      filter: blur(14px);
+      animation: floatGradient 10s ease-in-out infinite alternate;
+      pointer-events:none;
+      z-index:0;
+    }
+    @keyframes floatGradient{
+      0%{ transform:translate3d(-1.5%, -1.2%, 0) scale(1.02); }
+      100%{ transform:translate3d(1.6%, 1.3%, 0) scale(1.03); }
+    }
+
+    /* Confetti canvas */
+    #confetti{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      pointer-events:none;
+      opacity:.36;
+      mix-blend-mode:multiply;
+    }
+
+    .wrap{
+      max-width:520px;
+      margin:0 auto;
+      padding:30px 18px 90px; /* төмен жақ көбірек */
+      position:relative;
+      z-index:2;
+    }
+
+    /* Reveal animation */
+    .reveal{
+      opacity:0;
+      transform:translateY(14px);
+      filter: blur(2px);
+      transition: opacity .75s ease, transform .75s ease, filter .75s ease;
+      will-change: opacity, transform, filter;
+    }
+    .reveal.in{opacity:1;transform:translateY(0);filter: blur(0);}
+    .delay1{transition-delay:.08s}
+    .delay2{transition-delay:.16s}
+    .delay3{transition-delay:.24s}
+    .delay4{transition-delay:.32s}
+
+    /* Cards (АРАЛАРЫН АШТЫҚ) */
+    .card{
+      background:var(--card);
+      border:1px solid rgba(198,164,91,.40);
+      border-radius:24px;
+      padding:26px 20px;              /* ішкі арасы кең */
+      box-shadow:0 18px 50px rgba(0,0,0,.10);
+      backdrop-filter: blur(6px);
+      text-align:center;
+    }
+    .card + .card{margin-top:18px}    /* карталар арасы кең */
+
+    .divider{
+      height:1px;
+      background:rgba(198,164,91,.45);
+      margin:20px 0;
+    }
+
+    /* HERO */
+    .heroTitle{
+      margin:0;
+      font-weight:700;
+      letter-spacing:3px;
+      text-transform:uppercase;
+      color:var(--navy2);
+      font-size:24px;
+      line-height:1.2;
+    }
+    .heroSub{
+      margin:12px 0 0;
+      color:var(--muted);
+      font-size:15px;
+      letter-spacing:1.6px;
+      text-transform:uppercase;
+    }
+
+    /* EVENTS ACCENT */
+    .events{display:grid;gap:14px;margin-top:18px} /* gap кең */
+    .eventCard{
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px 12px;               /* padding кең */
+      background:rgba(255,255,255,.96);
+    }
+    .script{
+      font-family:"Marck Script", cursive;
+      font-size:36px;
+      line-height:1.1;
+      margin:0;
+      color:var(--navy2);
+    }
+    .eventLine{
+      width:74px;height:1px;
+      background:linear-gradient(90deg, transparent, rgba(198,164,91,.85), transparent);
+      margin:12px auto 0;
+    }
+
+    /* Invite text */
+    .p{margin:0;color:var(--muted);font-size:18px;line-height:1.6;}
+    .p + .p{margin-top:12px}
+
+    .small{
+      font-size:13px;
+      letter-spacing:1.6px;
+      text-transform:uppercase;
+      color:var(--muted);
+      margin:0;
+    }
+
+    /* Date/Time */
+    .dt{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+      margin-top:18px;
+    }
+    .dtBox{
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:16px 12px;
+      background:rgba(255,255,255,.96);
+    }
+    .dtBox b{
+      display:block;
+      margin-top:10px;
+      font-size:18px;
+      color:var(--navy2);
+    }
+
+    /* Button */
+    .btn{
+      display:inline-block;
+      margin-top:16px;
+      padding:12px 22px;
+      border-radius:999px;
+      background:var(--navy2);
+      color:#fff;
+      text-decoration:none;
+      font-weight:700;
+      letter-spacing:1.2px;
+      border:1px solid rgba(198,164,91,.60);
+      box-shadow:0 10px 24px rgba(15,29,51,.18);
+      position:relative;
+      overflow:hidden;
+      transition:transform .15s ease, opacity .15s ease;
+    }
+    .btn:hover{transform:translateY(-1px);opacity:.97}
+    .btn::after{
+      content:"";
+      position:absolute; top:-40%; left:-120%;
+      width:55%; height:180%;
+      background:linear-gradient(120deg, transparent, rgba(198,164,91,.55), transparent);
+      transform:rotate(18deg);
+      animation: shimmer 3.2s ease-in-out infinite;
+    }
+    @keyframes shimmer{
+      0%{ left:-120%; }
+      55%{ left:120%; }
+      100%{ left:120%; }
+    }
+
+    /* ===== TIMER + BIG DATE (16/01 with gradient slash) ===== */
+    .countTitle{
+      font-family:"Marck Script", cursive;
+      font-size:36px;
+      margin:0 0 12px;
+      color:var(--navy2);
+    }
+    .countGrid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      align-items:end;
+      margin-top:10px;
+    }
+    .countCell b{
+      display:block;
+      font-size:46px;
+      line-height:1;
+      color:var(--navy2);
+      transition:transform .18s ease;
+      font-variant-numeric: tabular-nums;
+    }
+    .countCell small{
+      display:block;
+      margin-top:10px;
+      font-size:11px;
+      letter-spacing:1.8px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .bigDateWrap{margin:22px 0 0;}
+    .bigDateNew{
+      display:flex;
+      align-items:flex-end;
+      justify-content:center;
+      gap:18px;                 /* арасы кең */
+      margin:18px 0 10px;
+      font-style:italic;
+      letter-spacing:2px;
+      color:var(--navy2);
+    }
+    .bigDateNew .num{
+      font-size:96px;
+      line-height:1;
+    }
+
+    /* Gradient slash */
+    .bigDateNew .slash{
+      font-size:96px;
+      line-height:1;
+      transform:translateY(2px);
+      background:linear-gradient(180deg, var(--gold2), var(--gold));
+      -webkit-background-clip:text;
+      background-clip:text;
+      color:transparent;
+      font-weight:700;
+      text-shadow:0 10px 25px rgba(198,164,91,.18);
+    }
+
+    .timeScript{
+      font-family:"Marck Script", cursive;
+      font-size:34px;
+      margin:10px 0 0;
+      color:var(--navy2);
+    }
+
+    .month{
+      font-family:"Marck Script", cursive;
+      font-size:30px;
+      margin:18px 0 8px;
+      color:var(--navy2);
+    }
+
+    /* Calendar */
+    .cal{margin-top:10px}
+    .calGrid{
+      display:grid;
+      grid-template-columns:repeat(7,1fr);
+      gap:12px;
+      font-size:16px;
+      justify-items:center;
+    }
+    .dow{
+      font-family:"Marck Script", cursive;
+      font-size:22px;
+      color:var(--muted);
+    }
+    .day{
+      width:34px;height:34px;
+      display:flex;align-items:center;justify-content:center;
+      border-radius:999px;
+      color:var(--navy2);
+    }
+    .day.heart{
+      position:relative;
+      font-weight:600;
+    }
+    .day.heart::after{
+      content:"";
+      position:absolute;
+      inset:-10px;
+      background: no-repeat center/contain url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath d='M32 56s-20-12.7-26.7-24.7C-0.5 18.6 7.2 8 18.8 8c5.1 0 9.7 2.6 13.2 6.7C35.5 10.6 40.1 8 45.2 8 56.8 8 64.5 18.6 58.7 31.3 52 43.3 32 56 32 56z' fill='none' stroke='%23c6a45b' stroke-width='2.6'/%3E%3C/svg%3E");
+      opacity:.95;
+      pointer-events:none;
+    }
+
+    /* RSVP */
+    .rsvpTitle{
+      margin:0;
+      font-weight:700;
+      letter-spacing:2px;
+      text-transform:uppercase;
+      color:var(--navy2);
+      font-size:18px;
+    }
+    .form{
+      margin-top:16px;
+      display:grid;
+      gap:14px;
+      text-align:left;
+    }
+    .field label{
+      display:block;
+      margin:0 0 6px;
+      font-size:12px;
+      letter-spacing:1.4px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+    input, select{
+      width:100%;
+      padding:13px 12px;
+      border-radius:14px;
+      border:1px solid rgba(18,34,58,.16);
+      background:rgba(255,255,255,.96);
+      color:var(--navy2);
+      outline:none;
+      font-family:inherit;
+      font-size:16px;
+    }
+    .submit{
+      appearance:none;
+      border:0;
+      cursor:pointer;
+      width:100%;
+      padding:12px 16px;
+      border-radius:999px;
+      background:var(--navy2);
+      color:#fff;
+      font-weight:700;
+      letter-spacing:1.2px;
+      border:1px solid rgba(198,164,91,.60);
+      box-shadow:0 10px 24px rgba(15,29,51,.18);
+      position:relative;
+      overflow:hidden;
+    }
+    .submit::after{
+      content:"";
+      position:absolute; top:-40%; left:-120%;
+      width:55%; height:180%;
+      background:linear-gradient(120deg, transparent, rgba(198,164,91,.55), transparent);
+      transform:rotate(18deg);
+      animation: shimmer 3.2s ease-in-out infinite;
+    }
+    .msg{
+      margin-top:10px;
+      color:var(--muted);
+      font-size:13px;
+      text-align:center;
+      min-height:18px;
+    }
+
+    @media (max-width:380px){
+      .script{font-size:32px}
+      .dt{grid-template-columns:1fr}
+      .bigDateNew .num,
+      .bigDateNew .slash{font-size:84px}
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      .bg::before{animation:none}
+      .reveal{transition:none;opacity:1;transform:none;filter:none}
+      #confetti{display:none}
+      .btn::after,.submit::after{animation:none}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bg">
+    <canvas id="confetti"></canvas>
+
+    <div class="wrap">
+
+      <div class="card">
+        <h1 class="heroTitle reveal">ҚҰРМЕТТІ ҚОНАҚТАР!</h1>
+        <p class="heroSub reveal delay1">Сіздерді қуанышымызға шақырамыз</p>
+
+        <div class="events">
+          <div class="eventCard reveal delay1">
+            <p class="script">Анашымның 60 жас мерейтойы</p>
+            <div class="eventLine"></div>
+          </div>
+          <div class="eventCard reveal delay2">
+            <p class="script">Ерханның сүндет тойы</p>
+            <div class="eventLine"></div>
+          </div>
+          <div class="eventCard reveal delay3">
+            <p class="script">Айлиннің 1 жас тұсаукесері</p>
+            <div class="eventLine"></div>
+          </div>
+        </div>
+
+        <div class="divider reveal delay3"></div>
+
+        <div class="reveal delay4">
+          <p class="p"><b>Сіздерді шақырамыз</b> — отбасымыз үшін аса қымбат, ерекше қуанышқа толы осы күнге ортақтас болуға.</p>
+          <p class="p">Бұл мерекеде ақ тілектер айтылып, қуанышымыз еселенетін сәттердің куәсі боласыздар.</p>
+          <p class="p">Жақындарымыздың басын қосып, бір дастархан басында жүздесуді ниет еттік.</p>
+          <p class="p">Қадірлі қонағымыз болып, шаттыққа бірге бөленіңіздер.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="small reveal">Күні / уақыты</p>
+
+        <div class="dt">
+          <div class="dtBox reveal delay1">
+            <p class="small">Өтетін күні</p>
+            <b>16.01.2026</b>
+          </div>
+
+          <div class="dtBox reveal delay2">
+            <p class="small">Басталуы</p>
+            <b>18:00</b>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIMER + DATE like screenshot (but 16/01 slash) -->
+      <div class="card">
+        <p class="countTitle reveal">Тойға дейін:</p>
+
+        <div class="countGrid reveal delay1">
+          <div class="countCell"><b id="dd">0</b><small>күн</small></div>
+          <div class="countCell"><b id="hh">00</b><small>сағ</small></div>
+          <div class="countCell"><b id="mm">00</b><small>мин</small></div>
+          <div class="countCell"><b id="ss">00</b><small>сек</small></div>
+        </div>
+
+        <div class="bigDateWrap reveal delay2">
+          <div class="bigDateNew">
+            <span class="num">16</span>
+            <span class="slash">/</span>
+            <span class="num">01</span>
+          </div>
+          <div class="timeScript">Басталуы: 18:00</div>
+        </div>
+
+        <div class="month reveal delay3">қаңтар</div>
+
+        <div class="cal reveal delay4">
+          <div class="calGrid">
+            <div class="dow">дс</div><div class="dow">сс</div><div class="dow">ср</div><div class="dow">бс</div><div class="dow">жм</div><div class="dow">сб</div><div class="dow">жс</div>
+            <div></div><div></div><div></div>
+            <div class="day">1</div><div class="day">2</div><div class="day">3</div><div class="day">4</div>
+            <div class="day">5</div><div class="day">6</div><div class="day">7</div><div class="day">8</div><div class="day">9</div><div class="day">10</div><div class="day">11</div>
+            <div class="day">12</div><div class="day">13</div><div class="day">14</div><div class="day">15</div>
+            <div class="day heart">16</div>
+            <div class="day">17</div><div class="day">18</div>
+            <div class="day">19</div><div class="day">20</div><div class="day">21</div><div class="day">22</div><div class="day">23</div><div class="day">24</div><div class="day">25</div>
+            <div class="day">26</div><div class="day">27</div><div class="day">28</div><div class="day">29</div><div class="day">30</div><div class="day">31</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <p class="small reveal">Мекен-жай</p>
+        <div class="divider reveal delay1"></div>
+
+        <div class="reveal delay2">
+          <p class="p" style="margin:0;"><b style="color:var(--navy2);">“Ақсұлу” мейрамханасы</b></p>
+          <p class="p" style="margin-top:10px;">Мекен-жайға жету үшін төмендегі батырма арқылы картаны ашсаңыз болады.</p>
+          <a class="btn" id="mapBtn" href="#" target="_blank" rel="noopener">ЖОЛ КАРТАСЫ!</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="rsvpTitle reveal">Анкета (RSVP)</h2>
+        <p class="heroSub reveal delay1" style="margin:12px 0 0;">Қатысуыңызды белгілеп жіберіңіз</p>
+
+        <form class="form reveal delay2" id="rsvpForm">
+          <div class="field">
+            <label>Аты-жөніңіз</label>
+            <input name="name" placeholder="Аты-жөніңізді жазыңыз" required />
+          </div>
+
+          <div class="field">
+            <label>Тойға қатысуыңыз</label>
+            <select name="attendance" required>
+              <option value="" disabled selected>Таңдаңыз</option>
+              <option value="Иә, келемін">Иә, келемін</option>
+              <option value="Жұбыммен келемін">Жұбыммен келемін</option>
+              <option value="Өкінішке орай келе алмаймын">Өкінішке орай келе алмаймын</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Телефон (қалауыңызша)</label>
+            <input name="phone" placeholder="+7 ..." />
+          </div>
+
+          <button class="submit" type="submit">ЖІБЕРУ</button>
+          <div class="msg" id="formMsg"></div>
+        </form>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // ===== SETTINGS =====
+    const EVENT_ISO = "2026-01-16T18:00:00+05:00";
+    const MAP_LINK = "https://2gis.kz"; // <-- нақты карта линкін осында қойыңыз
+    const RSVP_ENDPOINT = ""; // <-- керек болса қосамыз
+
+    document.getElementById("mapBtn").href = MAP_LINK;
+
+    // ===== Reveal =====
+    const io = new IntersectionObserver((entries)=>{
+      entries.forEach(e=>{
+        if(e.isIntersecting) e.target.classList.add("in");
+      });
+    }, { threshold: 0.12 });
+    document.querySelectorAll(".reveal").forEach(el=>io.observe(el));
+
+    // ===== Countdown =====
+    const pad = (n)=>String(n).padStart(2,"0");
+    const elDD = document.getElementById("dd");
+    const elHH = document.getElementById("hh");
+    const elMM = document.getElementById("mm");
+    const elSS = document.getElementById("ss");
+    let prev = {d:null,h:null,m:null,s:null};
+
+    function pulse(el){
+      el.style.transform = "scale(1.05)";
+      setTimeout(()=> el.style.transform = "scale(1)", 160);
+    }
+
+    function tick(){
+      const target = new Date(EVENT_ISO).getTime();
+      const now = Date.now();
+      let diff = Math.max(0, target - now);
+
+      const d = Math.floor(diff / (1000*60*60*24)); diff -= d*1000*60*60*24;
+      const h = Math.floor(diff / (1000*60*60)); diff -= h*1000*60*60;
+      const m = Math.floor(diff / (1000*60)); diff -= m*1000*60;
+      const s = Math.floor(diff / 1000);
+
+      if(prev.d!==d){ elDD.textContent=d; pulse(elDD); prev.d=d; }
+      if(prev.h!==h){ elHH.textContent=pad(h); pulse(elHH); prev.h=h; }
+      if(prev.m!==m){ elMM.textContent=pad(m); pulse(elMM); prev.m=m; }
+      if(prev.s!==s){ elSS.textContent=pad(s); pulse(elSS); prev.s=s; }
+    }
+    tick(); setInterval(tick, 1000);
+
+    // ===== RSVP (demo) =====
+    const form = document.getElementById("rsvpForm");
+    const msg = document.getElementById("formMsg");
+
+    form.addEventListener("submit", async (e)=>{
+      e.preventDefault();
+      msg.textContent = "Жіберіліп жатыр...";
+
+      const payload = Object.fromEntries(new FormData(form).entries());
+      payload.eventISO = EVENT_ISO;
+
+      if(!RSVP_ENDPOINT){
+        console.log("RSVP DEMO:", payload);
+        msg.textContent = "Рақмет! Жауабыңыз қабылданды.";
+        form.reset();
+        return;
+      }
+
+      try{
+        const res = await fetch(RSVP_ENDPOINT, {
+          method:"POST",
+          headers:{ "Content-Type":"application/json" },
+          body: JSON.stringify(payload)
+        });
+        if(!res.ok) throw new Error("Bad response");
+        msg.textContent = "Рақмет! Жауабыңыз қабылданды.";
+        form.reset();
+      }catch(err){
+        msg.textContent = "Қате шықты. Кейінірек қайталап көріңіз.";
+      }
+    });
+
+    // ===== CONFETTI (continuous rain from bottom) =====
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d", { alpha: true });
+
+    function resize(){
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.floor(canvas.clientWidth * dpr);
+      canvas.height = Math.floor(canvas.clientHeight * dpr);
+      ctx.setTransform(dpr,0,0,dpr,0,0);
+    }
+    function fit(){
+      canvas.style.width = "100%";
+      canvas.style.height = "100%";
+      resize();
+    }
+    fit();
+    window.addEventListener("resize", resize);
+
+    const colors = [
+      "rgba(198,164,91,.55)",  // gold
+      "rgba(18,34,58,.30)",    // navy
+      "rgba(255,255,255,.24)"  // soft white
+    ];
+
+    const confetti = [];
+    const MAX = 80;            // көбірек — “жауып тұрғандай”
+    const SPAWN_PER_FRAME = 1; // үздіксіз қосылады
+    const DRIFT = 0.36;
+
+    function rand(min,max){ return Math.random()*(max-min)+min; }
+
+    function makeParticle(){
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+      return {
+        x: rand(0, w),
+        y: h + rand(10, 180),
+        vx: rand(-0.18, 0.18),
+        vy: rand(-1.15, -0.65),     // тұрақты көтерілу
+        size: rand(3, 7),
+        rot: rand(0, Math.PI*2),
+        vr: rand(-0.035, 0.035),
+        alpha: rand(0.14, 0.40),
+        color: colors[Math.floor(rand(0, colors.length))]
+      };
+    }
+
+    // start with some
+    for(let i=0;i<60;i++) confetti.push(makeParticle());
+
+    function step(){
+      const w = canvas.clientWidth;
+      const h = canvas.clientHeight;
+
+      // spawn continuously but cap
+      for(let k=0;k<SPAWN_PER_FRAME;k++){
+        if(confetti.length < MAX) confetti.push(makeParticle());
+      }
+
+      ctx.clearRect(0,0,w,h);
+
+      for(let i=0;i<confetti.length;i++){
+        const p = confetti[i];
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.rot += p.vr;
+
+        // gentle drift
+        p.vx += rand(-0.003, 0.003);
+        p.vx = Math.max(-DRIFT, Math.min(DRIFT, p.vx));
+
+        ctx.save();
+        ctx.translate(p.x, p.y);
+        ctx.rotate(p.rot);
+        ctx.globalAlpha = p.alpha;
+        ctx.fillStyle = p.color;
+
+        const r = 2;
+        const ww = p.size * 1.5;
+        const hh = p.size * 0.95;
+
+        ctx.beginPath();
+        ctx.moveTo(-ww/2 + r, -hh/2);
+        ctx.arcTo( ww/2, -hh/2,  ww/2,  hh/2, r);
+        ctx.arcTo( ww/2,  hh/2, -ww/2,  hh/2, r);
+        ctx.arcTo(-ww/2,  hh/2, -ww/2, -hh/2, r);
+        ctx.arcTo(-ww/2, -hh/2,  ww/2, -hh/2, r);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        // recycle
+        if(p.y < -200 || p.x < -120 || p.x > w + 120){
+          confetti[i] = makeParticle();
+        }
+      }
+
+      requestAnimationFrame(step);
+    }
+    step();
+  </script>
+</body>
+</html>
